@@ -2,43 +2,55 @@
   <div id="app">
     <div class="system">
       <aside>
-        <input type="file" @change="getCustomImage">
+        <input type="file"
+          @change="getCustomImage">
         <div v-html="'&#128522;&#128521;&#128519;&#128578;&#128518;&#128579;&#128525;&#129315;&#128514;'"></div>
         <button @click="bOrA = !bOrA">{{bOrA?'before':'after'}}</button>
         <button @click="generateAsciiArt">彩蛋</button>
         <div class="matrix">
-          <input type="number" v-model="custom[0]">
-          <input type="number" v-model="custom[1]">
-          <input type="number" v-model="custom[2]">
-          <input type="number" v-model="custom[3]">
-          <input type="number" v-model="custom[4]">
-          <input type="number" v-model="custom[5]">
-          <input type="number" v-model="custom[6]">
-          <input type="number" v-model="custom[7]">
-          <input type="number" v-model="custom[8]">
+          <input type="number"
+            v-model="custom[0]">
+          <input type="number"
+            v-model="custom[1]">
+          <input type="number"
+            v-model="custom[2]">
+          <input type="number"
+            v-model="custom[3]">
+          <input type="number"
+            v-model="custom[4]">
+          <input type="number"
+            v-model="custom[5]">
+          <input type="number"
+            v-model="custom[6]">
+          <input type="number"
+            v-model="custom[7]">
+          <input type="number"
+            v-model="custom[8]">
         </div>
-        divisor<input type="number" v-model="divisor">
+        divisor<input type="number"
+          v-model="divisor">
         <div>
           <button @click="setKernelAndDivisor([0,0,0,0,1,0,0,0,0])">重置</button>
           <button @click="setKernelAndDivisor([1,1,1,1,1,1,1,1,1],9)">模糊</button>
-          <button @click="setKernelAndDivisor([0, -1, 0, -1, 5, -1, 0, -1, 0])">锐化</button>
+          <button @click="setKernelAndDivisor([0, -1, 0, -1, 5, -1, 0, -1, 0])">锐化</button><br>
           <button @click="setKernelAndDivisor([-2, -1, 0, -1, 1, 1, 0, 1, 2])">浮雕</button>
           <button @click="setKernelAndDivisor([0, 0, 0, -1, 1, 0, 0, 0, 0])">边缘增强</button>
           <button @click="setKernelAndDivisor( [0, 1, 0, 1, -4, 1, 0, 1, 0])">边缘检测</button>
         </div>
       </aside>
       <div class="canvas-display">
-        <canvas id="input" :width="width" :height="height">
+        <canvas id="input">
         </canvas>
-        <canvas v-show="bOrA" id="output" :width="width" :height="height">
+        <canvas v-show="bOrA"
+          id="output">
         </canvas>
       </div>
     </div>
     <!-- <div id="ascii-art">
-      <div class="art" v-for="line in asciiArray">
-        <span v-for="bit in line">{{bit}}</span>
-      </div>
-    </div> -->
+                      <div class="art" v-for="line in asciiArray">
+                        <span v-for="bit in line">{{bit}}</span>
+                      </div>
+                    </div> -->
   </div>
 </template>
 
@@ -55,7 +67,8 @@ export default {
       bOrA: true,
       asciiArray: [],
       divisor: 1,
-      custom: [0, 0, 0, 0, 1, 0, 0, 0, 0]
+      custom: [0, 0, 0, 0, 1, 0, 0, 0, 0],
+      imageData: '' // 原图的imageData
     }
   },
   watch: {
@@ -84,14 +97,7 @@ export default {
         let img = new Image()
         img.src = reader.result
         img.onload = function() {
-          draw(this,this.width,this.height)
-        }
-        function draw(img) {
-          let ctx = vm.inputCtx
-          ctx.drawImage(img, 0, 0, vm.width, vm.height)
-          let imageData = ctx.getImageData(0, 0, vm.width, vm.height)
-          vm.imageData = imageData
-          vm.convolutionMatrix(imageData, vm.custom, 0)
+          vm.draw(this, this.width, this.height)
         }
       })
     },
@@ -117,7 +123,7 @@ export default {
                 m[6] * iD[i + w * 4 - 4] +
                 m[7] * iD[i + w * 4] +
                 m[8] * iD[i + w * 4 + 4]) /
-                this.divisor
+              this.divisor
           }
           oD[(y * w + x) * 4 + 3] = 255
         }
@@ -174,8 +180,8 @@ export default {
         )
         newCtx.fillText(
           grayScale2Ascii[Math.floor(avg / 225 * grayScale)] || ' ',
-          widthSign * 8,
-          heightSign * 8
+          widthSign * 10,
+          heightSign * 10
         )
         if (widthSign < width) {
           widthSign += 1
@@ -193,24 +199,43 @@ export default {
         'image/jpeg',
         0.8
       )
+    },
+    draw(img, width, height) {
+      let input = document.querySelector('#input')
+      this.inputCtx = input.getContext('2d')
+
+      let output = document.querySelector('#output')
+      this.outputCtx = output.getContext('2d')
+
+      let display = document.querySelector('.canvas-display')
+      if (80 / 48 < width / height) {
+        output.width = input.width = 800
+        output.height = input.height = 800 * height / width
+        let top = 240 - 400 * height / width
+        output.style.top = input.style.top = top + 'px'
+        display.appendChild(input)
+        display.appendChild(output)
+      } else {
+        output.height = input.height = 480
+        output.width = input.width = 480 * width / height
+        let left = 400 - 240 * width / height
+        output.style.left = input.style.left = left + 'px'
+        display.appendChild(input)
+        display.appendChild(output)
+      }
+      let ctx = this.inputCtx
+      ctx.drawImage(img, 0, 0, input.width, input.height)
+      let imageData = ctx.getImageData(0, 0, input.width, input.height)
+      this.imageData = imageData
+      this.convolutionMatrix(imageData, this.custom, 0)
     }
   },
   mounted() {
     let vm = this
-    vm.inputCtx = document.getElementById('input').getContext('2d')
-    vm.outputCtx = document.getElementById('output').getContext('2d')
     let img = new Image()
     img.src = './img.jpg'
     img.onload = function() {
-      draw(this)
-    }
-
-    function draw(img) {
-      let ctx = vm.inputCtx
-      ctx.drawImage(img, 0, 0, vm.width, vm.height)
-      let imageData = ctx.getImageData(0, 0, vm.width, vm.height)
-      vm.imageData = imageData
-      vm.convolutionMatrix(imageData, vm.custom, 1, 0)
+      vm.draw(this, this.width, this.height)
     }
   }
 }
@@ -218,38 +243,45 @@ export default {
 
 <style lang="less">
 @import './common.css';
-.system {
-  display: flex;
-  .canvas-display {
-    position: relative;
-    width: 800px;
-    height: 480px;
-    canvas {
-      position: absolute;
+#app {
+  width: 1000px;
+  margin: auto;
+  .system {
+    display: flex;
+    aside {
+      width: 200px;
+    }
+    .canvas-display {
+      position: relative;
+      width: 800px;
+      height: 480px;
+      canvas {
+        position: absolute;
+      }
+    }
+    .matrix {
+      display: flex;
+      flex-wrap: wrap;
+      width: 180px;
+    }
+    .matrix>input {
+      box-sizing: border-box;
+      height: 60px;
+      width: 60px;
+      text-align: center;
     }
   }
-  .matrix {
-    display: flex;
-    flex-wrap: wrap;
-    width: 180px;
-  }
-  .matrix > input {
-    box-sizing: border-box;
-    height: 60px;
-    width: 60px;
-    text-align: center;
-  }
-}
 
-#ascii-art {
-  // position: absolute;
-  // left: 100vw;
-  display: inline-block;
-  white-space: pre;
-}
-.art {
-  font-size: 12px;
-  line-height: 7px;
-  font-family: Courier;
+  #ascii-art {
+    // position: absolute;
+    // left: 100vw;
+    display: inline-block;
+    white-space: pre;
+  }
+  .art {
+    font-size: 12px;
+    line-height: 7px;
+    font-family: Courier;
+  }
 }
 </style>
