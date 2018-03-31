@@ -4,7 +4,7 @@
       <aside>
         <input type="file"
           @change="getCustomImage">
-        <div v-html="'&#128522;&#128521;&#128519;&#128578;&#128518;&#128579;&#128525;&#129315;&#128514;'"></div>
+        <div v-html="'&#128522;&#128521;&#128519;&#128518;&#128525;&#129315;&#128514;'"></div>
         <button @click="bOrA = !bOrA">{{bOrA?'before':'after'}}</button>
         <button @click="generateAsciiArt">彩蛋</button>
         <div class="matrix">
@@ -27,8 +27,10 @@
           <input type="number"
             v-model="custom[8]">
         </div>
-        divisor<input type="number"
-          v-model="divisor">
+        <div class="divisor">
+          divisor<input type="number"
+            v-model="divisor">
+        </div>
         <div>
           <button @click="setKernelAndDivisor([0,0,0,0,1,0,0,0,0])">重置</button>
           <button @click="setKernelAndDivisor([1,1,1,1,1,1,1,1,1],9)">模糊</button>
@@ -39,6 +41,7 @@
         </div>
       </aside>
       <div class="canvas-display">
+        <Spin v-if="loading"/>
         <canvas id="input">
         </canvas>
         <canvas v-show="bOrA"
@@ -46,20 +49,19 @@
         </canvas>
       </div>
     </div>
-    <!-- <div id="ascii-art">
-                      <div class="art" v-for="line in asciiArray">
-                        <span v-for="bit in line">{{bit}}</span>
-                      </div>
-                    </div> -->
+    <!-- <div id="ascii-art"><div class="art" v-for="line in asciiArray"><span v-for="bit in line">{{bit}}</span></div></div> -->
   </div>
 </template>
 
 <script>
+// TODO 添加反色，添加灰度
 var FileSaver = require('file-saver')
+import Spin from './Spin.vue'
 export default {
   name: 'app',
   data() {
     return {
+      loading: false,
       inputCtx: '',
       outputCtx: '',
       width: 800,
@@ -71,6 +73,7 @@ export default {
       imageData: '' // 原图的imageData
     }
   },
+  components: { Spin },
   watch: {
     custom(matrix) {
       matrix.map(val => Number(val) || 0)
@@ -162,11 +165,11 @@ export default {
       console.log('get grayScale')
 
       let newCanvas = document.createElement('canvas')
-      newCanvas.height = imageData.height * 8
-      newCanvas.width = imageData.width * 8
+      newCanvas.height = imageData.height * 10
+      newCanvas.width = imageData.width * 10
       let newCtx = newCanvas.getContext('2d')
       newCtx.fillStyle = '#fff'
-      newCtx.fillRect(0, 0, imageData.width * 8, imageData.height * 8)
+      newCtx.fillRect(0, 0, imageData.width * 10, imageData.height * 10)
       newCtx.fillStyle = '#000'
       newCtx.font = '15px'
 
@@ -201,13 +204,18 @@ export default {
       )
     },
     draw(img, width, height) {
+      this.loading = true
+      let display = document.querySelector('.canvas-display')
       let input = document.querySelector('#input')
+      let output = document.querySelector('#output')
+
+      display.removeChild(input)
+      display.removeChild(output)
+
       this.inputCtx = input.getContext('2d')
 
-      let output = document.querySelector('#output')
       this.outputCtx = output.getContext('2d')
 
-      let display = document.querySelector('.canvas-display')
       if (80 / 48 < width / height) {
         output.width = input.width = 800
         output.height = input.height = 800 * height / width
@@ -228,6 +236,7 @@ export default {
       let imageData = ctx.getImageData(0, 0, input.width, input.height)
       this.imageData = imageData
       this.convolutionMatrix(imageData, this.custom, 0)
+      this.loading = false
     }
   },
   mounted() {
@@ -245,7 +254,7 @@ export default {
 @import './common.css';
 #app {
   width: 1000px;
-  margin: auto;
+  margin: 50px auto;
   .system {
     display: flex;
     aside {
@@ -260,15 +269,24 @@ export default {
       }
     }
     .matrix {
+      margin: 5px;
       display: flex;
       flex-wrap: wrap;
-      width: 180px;
+      width: 120px;
+      >input {
+        box-sizing: border-box;
+        height: 40px;
+        width: 40px;
+        text-align: center;
+      }
     }
-    .matrix>input {
-      box-sizing: border-box;
-      height: 60px;
-      width: 60px;
-      text-align: center;
+    .divisor {
+      margin: 5px;
+      >input {
+        margin: 5px;
+        height: 20px;
+        width: 40px;
+      }
     }
   }
 
