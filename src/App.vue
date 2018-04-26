@@ -5,9 +5,8 @@
         <input id="file" type="file" @change="getCustomImage">
         <label for="file">选择文件</label>
         <div v-html="'&#128522;&#128521;&#128519;&#128518;&#128525;&#129315;&#128514;'"></div>
-        <button @click="bOrA = !bOrA">{{bOrA?'before':'after'}}</button>
-        <button @click="generateAsciiArt(69)">彩蛋code69</button>
-        <button @click="generateAsciiArt(10)">彩蛋code10</button>
+        <button @click="generateAsciiArt(69)">彩蛋c69</button>
+        <button @click="generateAsciiArt(10)">彩蛋c10</button>
         <div class="matrix">
           <input type="number" v-model="custom[0]">
           <input type="number" v-model="custom[1]">
@@ -23,6 +22,7 @@
           divisor<input type="number" v-model="divisor">
         </div>
         <div>
+          <button @click="bOrA = !bOrA" :class="{before:bOrA}">{{bOrA?'BEFORE':'AFTER'}}</button>
           <button @click="setKernelAndDivisor([0,0,0,0,1,0,0,0,0])">重置</button>
           <button @click="setKernelAndDivisor([1,1,1,1,1,1,1,1,1],9)">快速模糊</button>
           <button @click="setKernelAndDivisor([1,2,1,2,4,2,1,2,1],16)">高斯模糊</button>
@@ -76,12 +76,10 @@ export default {
     }
   },
   methods: {
-    setKernelAndDivisor(kernel, divisor) {
-      divisor = divisor || 1
+    setKernelAndDivisor(kernel, divisor = 1) {
       this.custom = kernel
       this.divisor = divisor
     },
-    html2Canvas() {},
     getCustomImage(e) {
       let vm = this
       let file = e.target.files[0]
@@ -95,7 +93,7 @@ export default {
         }
       })
     },
-    convolutionMatrix(input, m, offset=0) {
+    convolutionMatrix(input, m, offset = 0) {
       let ctx = this.outputCtx
       let output = ctx.createImageData(input)
       let w = input.width,
@@ -181,7 +179,7 @@ export default {
         }
       }
       console.log('parse end')
-      // vm.html2Canvas()
+
       let blob = newCanvas.toBlob(
         blob => FileSaver.saveAs(blob, 'hello world.jpg'),
         'image/jpeg',
@@ -206,16 +204,19 @@ export default {
         output.height = input.height = 800 * height / width
         let top = 240 - 400 * height / width
         output.style.top = input.style.top = top + 'px'
+        output.style.left = input.style.left = '0px'
         display.appendChild(input)
         display.appendChild(output)
       } else {
         output.height = input.height = 480
         output.width = input.width = 480 * width / height
         let left = 400 - 240 * width / height
+        output.style.top = input.style.top = '0px'
         output.style.left = input.style.left = left + 'px'
         display.appendChild(input)
         display.appendChild(output)
       }
+
       let ctx = this.inputCtx
       ctx.drawImage(img, 0, 0, input.width, input.height)
       let imageData = ctx.getImageData(0, 0, input.width, input.height)
