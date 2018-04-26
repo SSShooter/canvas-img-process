@@ -1,6 +1,14 @@
-button{
-    border: none;
-    padding: 10px;
-    margin: 5px;
-    background: #eee;
+button,
+label {
+  border: none;
+  padding: 10px;
+  margin: 5px;
+  background: #eee;
+}
+label {
+  text-align: center;
+  display: block;
+}
+#file {
+  display: none;
 }

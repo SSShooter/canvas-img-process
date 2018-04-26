@@ -2,50 +2,42 @@
   <div id="app">
     <div class="system">
       <aside>
-        <input type="file"
-          @change="getCustomImage">
+        <input id="file" type="file" @change="getCustomImage">
+        <label for="file">选择文件</label>
         <div v-html="'&#128522;&#128521;&#128519;&#128518;&#128525;&#129315;&#128514;'"></div>
         <button @click="bOrA = !bOrA">{{bOrA?'before':'after'}}</button>
-        <button @click="generateAsciiArt">彩蛋</button>
+        <button @click="generateAsciiArt(69)">彩蛋code69</button>
+        <button @click="generateAsciiArt(10)">彩蛋code10</button>
         <div class="matrix">
-          <input type="number"
-            v-model="custom[0]">
-          <input type="number"
-            v-model="custom[1]">
-          <input type="number"
-            v-model="custom[2]">
-          <input type="number"
-            v-model="custom[3]">
-          <input type="number"
-            v-model="custom[4]">
-          <input type="number"
-            v-model="custom[5]">
-          <input type="number"
-            v-model="custom[6]">
-          <input type="number"
-            v-model="custom[7]">
-          <input type="number"
-            v-model="custom[8]">
+          <input type="number" v-model="custom[0]">
+          <input type="number" v-model="custom[1]">
+          <input type="number" v-model="custom[2]">
+          <input type="number" v-model="custom[3]">
+          <input type="number" v-model="custom[4]">
+          <input type="number" v-model="custom[5]">
+          <input type="number" v-model="custom[6]">
+          <input type="number" v-model="custom[7]">
+          <input type="number" v-model="custom[8]">
         </div>
         <div class="divisor">
-          divisor<input type="number"
-            v-model="divisor">
+          divisor<input type="number" v-model="divisor">
         </div>
         <div>
           <button @click="setKernelAndDivisor([0,0,0,0,1,0,0,0,0])">重置</button>
-          <button @click="setKernelAndDivisor([1,1,1,1,1,1,1,1,1],9)">模糊</button>
+          <button @click="setKernelAndDivisor([1,1,1,1,1,1,1,1,1],9)">快速模糊</button>
+          <button @click="setKernelAndDivisor([1,2,1,2,4,2,1,2,1],16)">高斯模糊</button>
           <button @click="setKernelAndDivisor([0, -1, 0, -1, 5, -1, 0, -1, 0])">锐化</button><br>
           <button @click="setKernelAndDivisor([-2, -1, 0, -1, 1, 1, 0, 1, 2])">浮雕</button>
           <button @click="setKernelAndDivisor([0, 0, 0, -1, 1, 0, 0, 0, 0])">边缘增强</button>
-          <button @click="setKernelAndDivisor( [0, 1, 0, 1, -4, 1, 0, 1, 0])">边缘检测</button>
+          <button @click="setKernelAndDivisor( [0, 1, 0, 1, -4, 1, 0, 1, 0])">边缘检测1</button>
+          <button @click="setKernelAndDivisor( [-1, -1, -1, -1, 8, -1,-1, -1, -1])">边缘检测2</button>
         </div>
       </aside>
       <div class="canvas-display">
-        <Spin v-if="loading"/>
+        <Spin v-if="loading" />
         <canvas id="input">
         </canvas>
-        <canvas v-show="bOrA"
-          id="output">
+        <canvas v-show="bOrA" id="output">
         </canvas>
       </div>
     </div>
@@ -89,8 +81,7 @@ export default {
       this.custom = kernel
       this.divisor = divisor
     },
-    html2Canvas() {
-    },
+    html2Canvas() {},
     getCustomImage(e) {
       let vm = this
       let file = e.target.files[0]
@@ -104,7 +95,7 @@ export default {
         }
       })
     },
-    convolutionMatrix(input, m, offset) {
+    convolutionMatrix(input, m, offset=0) {
       let ctx = this.outputCtx
       let output = ctx.createImageData(input)
       let w = input.width,
@@ -126,44 +117,38 @@ export default {
                 m[6] * iD[i + w * 4 - 4] +
                 m[7] * iD[i + w * 4] +
                 m[8] * iD[i + w * 4 + 4]) /
-              this.divisor
+                this.divisor
           }
           oD[(y * w + x) * 4 + 3] = 255
         }
       }
       ctx.putImageData(output, 0, 0)
     },
-    generateAsciiArt() {
-      // document
-      //   .getElementById('mini')
-      //   .getContext('2d')
-      //   .drawImage(
-      //     document.getElementById('output'),
-      //     0,
-      //     0,
-      //     this.width / 4,
-      //     this.height / 4
-      //   )
+    generateAsciiArt(grayScaleSelect) {
       let vm = this
       let canvas = document.getElementById('output')
-      console.log('get ctx')
       let ctx = canvas.getContext('2d')
       let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      console.log('get ctx')
       let data = imageData.data
       let width = canvas.width
       let widthSign = 1
       let heightSign = 1
 
-      // 69级灰度
-      // let grayScale2Ascii =
-      //   '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,"^`\'. '
-      // let grayScale = grayScale2Ascii.length
+      let grayScale2Ascii
+      let grayScale
 
-      // 十级灰度
-      let grayScale2Ascii = '@%#*+=-:. '
-      let grayScale = grayScale2Ascii.length
+      if (grayScaleSelect === 69) {
+        // 69级灰度
+        grayScale2Ascii =
+          '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,"^`\'. '
+        grayScale = grayScale2Ascii.length
+      } else {
+        // 十级灰度
+        grayScale2Ascii = '@%#*+=-:. '
+        grayScale = grayScale2Ascii.length
+      }
       console.log('get grayScale')
-
       let newCanvas = document.createElement('canvas')
       newCanvas.height = imageData.height * 10
       newCanvas.width = imageData.width * 10
@@ -273,7 +258,7 @@ export default {
       display: flex;
       flex-wrap: wrap;
       width: 120px;
-      >input {
+      > input {
         box-sizing: border-box;
         height: 40px;
         width: 40px;
@@ -282,7 +267,7 @@ export default {
     }
     .divisor {
       margin: 5px;
-      >input {
+      > input {
         margin: 5px;
         height: 20px;
         width: 40px;
@@ -291,8 +276,6 @@ export default {
   }
 
   #ascii-art {
-    // position: absolute;
-    // left: 100vw;
     display: inline-block;
     white-space: pre;
   }
