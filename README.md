@@ -2,6 +2,12 @@
 
 > A Vue.js project
 
+## 卷积核相关
+[维基](https://en.wikipedia.org/wiki/Kernel_(image_processing))
+
+## 彩蛋
+无毒无害，试试就知道啦:joy:
+
 ## Build Setup
 
 ``` bash
