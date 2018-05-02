@@ -4,9 +4,9 @@
       <aside>
         <input id="file" type="file" @change="getCustomImage">
         <label for="file">选择文件</label>
-        <div v-html="'&#128522;&#128521;&#128519;&#128518;&#128525;&#129315;&#128514;'"></div>
-        <button @click="generateAsciiArt(69)">彩蛋c69</button>
-        <button @click="generateAsciiArt(10)">彩蛋c10</button>
+        <button @click="generateAsciiArt(69)">彩蛋c69&#129315;</button>
+        <button @click="generateAsciiArt(10)">彩蛋c10&#128514;</button>
+        <div style="margin: 5px;">kernel</div>
         <div class="matrix">
           <input type="number" v-model="custom[0]">
           <input type="number" v-model="custom[1]">
@@ -22,7 +22,7 @@
           divisor<input type="number" v-model="divisor">
         </div>
         <div>
-          <button @click="bOrA = !bOrA" :class="{before:bOrA}">{{bOrA?'BEFORE':'AFTER'}}</button>
+          <button @click="bOrA = !bOrA" :class="{before:!bOrA}">{{!bOrA?'BEFORE':'AFTER'}}</button>
           <button @click="setKernelAndDivisor([0,0,0,0,1,0,0,0,0])">重置</button>
           <button @click="setKernelAndDivisor([1,1,1,1,1,1,1,1,1],9)">快速模糊</button>
           <button @click="setKernelAndDivisor([1,2,1,2,4,2,1,2,1],16)">高斯模糊</button>
@@ -41,7 +41,6 @@
         </canvas>
       </div>
     </div>
-    <!-- <div id="ascii-art"><div class="art" v-for="line in asciiArray"><span v-for="bit in line">{{bit}}</span></div></div> -->
   </div>
 </template>
 
@@ -67,6 +66,7 @@ export default {
   },
   components: { Spin },
   watch: {
+    // 修改kernel和divisor触发处理图片函数
     custom(matrix) {
       matrix.map(val => Number(val) || 0)
       this.convolutionMatrix(this.imageData, this.custom, 0)
@@ -93,7 +93,7 @@ export default {
         }
       })
     },
-    convolutionMatrix(input, m, offset = 0) {
+    convolutionMatrix(input, kernel, offset = 0) {
       let ctx = this.outputCtx
       let output = ctx.createImageData(input)
       let w = input.width,
@@ -106,15 +106,15 @@ export default {
             let i = (y * w + x) * 4 + c
             oD[i] =
               offset +
-              (m[0] * iD[i - w * 4 - 4] +
-                m[1] * iD[i - w * 4] +
-                m[2] * iD[i - w * 4 + 4] +
-                m[3] * iD[i - 4] +
-                m[4] * iD[i] +
-                m[5] * iD[i + 4] +
-                m[6] * iD[i + w * 4 - 4] +
-                m[7] * iD[i + w * 4] +
-                m[8] * iD[i + w * 4 + 4]) /
+              (kernel[0] * iD[i - w * 4 - 4] +
+                kernel[1] * iD[i - w * 4] +
+                kernel[2] * iD[i - w * 4 + 4] +
+                kernel[3] * iD[i - 4] +
+                kernel[4] * iD[i] +
+                kernel[5] * iD[i + 4] +
+                kernel[6] * iD[i + w * 4 - 4] +
+                kernel[7] * iD[i + w * 4] +
+                kernel[8] * iD[i + w * 4 + 4]) /
                 this.divisor
           }
           oD[(y * w + x) * 4 + 3] = 255
@@ -239,6 +239,7 @@ export default {
 <style lang="less">
 @import './common.css';
 #app {
+  color: #eee;
   width: 1000px;
   margin: 50px auto;
   .system {
@@ -272,6 +273,7 @@ export default {
         margin: 5px;
         height: 20px;
         width: 40px;
+        text-align: center;
       }
     }
   }
