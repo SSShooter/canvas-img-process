@@ -2,27 +2,41 @@
   <div id="app">
     <div class="system">
       <aside>
-        <input id="file" type="file" @change="getCustomImage">
+        <input id="file"
+          type="file"
+          @change="getCustomImage">
         <label for="file">选择文件</label>
         <button @click="generateAsciiArt(69)">彩蛋c69&#129315;</button>
         <button @click="generateAsciiArt(10)">彩蛋c10&#128514;</button>
+        <button @click="mosaic(10)">马赛克&#128514;</button>
         <div style="margin: 5px;">kernel</div>
         <div class="matrix">
-          <input type="number" v-model="custom[0]">
-          <input type="number" v-model="custom[1]">
-          <input type="number" v-model="custom[2]">
-          <input type="number" v-model="custom[3]">
-          <input type="number" v-model="custom[4]">
-          <input type="number" v-model="custom[5]">
-          <input type="number" v-model="custom[6]">
-          <input type="number" v-model="custom[7]">
-          <input type="number" v-model="custom[8]">
+          <input type="number"
+            v-model="custom[0]">
+          <input type="number"
+            v-model="custom[1]">
+          <input type="number"
+            v-model="custom[2]">
+          <input type="number"
+            v-model="custom[3]">
+          <input type="number"
+            v-model="custom[4]">
+          <input type="number"
+            v-model="custom[5]">
+          <input type="number"
+            v-model="custom[6]">
+          <input type="number"
+            v-model="custom[7]">
+          <input type="number"
+            v-model="custom[8]">
         </div>
         <div class="divisor">
-          divisor<input type="number" v-model="divisor">
+          divisor<input type="number"
+            v-model="divisor">
         </div>
         <div>
-          <button @click="bOrA = !bOrA" :class="{before:!bOrA}">{{!bOrA?'BEFORE':'AFTER'}}</button>
+          <button @click="bOrA = !bOrA"
+            :class="{before:!bOrA}">{{!bOrA?'BEFORE':'AFTER'}}</button>
           <button @click="setKernelAndDivisor([0,0,0,0,1,0,0,0,0])">重置</button>
           <button @click="setKernelAndDivisor([1,1,1,1,1,1,1,1,1],9)">快速模糊</button>
           <button @click="setKernelAndDivisor([1,2,1,2,4,2,1,2,1],16)">高斯模糊</button>
@@ -37,7 +51,8 @@
         <Spin v-if="loading" />
         <canvas id="input">
         </canvas>
-        <canvas v-show="bOrA" id="output">
+        <canvas v-show="bOrA"
+          id="output">
         </canvas>
       </div>
     </div>
@@ -46,64 +61,64 @@
 
 <script>
 // TODO 添加反色，添加灰度
-var FileSaver = require('file-saver')
-import Spin from './Spin.vue'
+var FileSaver = require("file-saver");
+import Spin from "./Spin.vue";
 export default {
-  name: 'app',
+  name: "app",
   data() {
     return {
       loading: false,
-      inputCtx: '',
-      outputCtx: '',
+      inputCtx: "",
+      outputCtx: "",
       width: 800,
       height: 480,
       bOrA: true,
       asciiArray: [],
       divisor: 1,
       custom: [0, 0, 0, 0, 1, 0, 0, 0, 0],
-      imageData: '' // 原图的imageData
-    }
+      imageData: "" // 原图的imageData
+    };
   },
   components: { Spin },
   watch: {
     // 修改kernel和divisor触发处理图片函数
     custom(matrix) {
-      matrix.map(val => Number(val) || 0)
-      this.convolutionMatrix(this.imageData, this.custom, 0)
+      matrix.map(val => Number(val) || 0);
+      this.convolutionMatrix(this.imageData, this.custom, 0);
     },
     divisor(divisor) {
-      this.convolutionMatrix(this.imageData, this.custom, 0)
+      this.convolutionMatrix(this.imageData, this.custom, 0);
     }
   },
   methods: {
     setKernelAndDivisor(kernel, divisor = 1) {
-      this.custom = kernel
-      this.divisor = divisor
+      this.custom = kernel;
+      this.divisor = divisor;
     },
     getCustomImage(e) {
-      let vm = this
-      let file = e.target.files[0]
-      let reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.addEventListener('load', () => {
-        let img = new Image()
-        img.src = reader.result
+      let vm = this;
+      let file = e.target.files[0];
+      let reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.addEventListener("load", () => {
+        let img = new Image();
+        img.src = reader.result;
         img.onload = function() {
-          vm.draw(this, this.width, this.height)
-        }
-      })
+          vm.draw(this, this.width, this.height);
+        };
+      });
     },
     convolutionMatrix(input, kernel, offset = 0) {
-      let ctx = this.outputCtx
-      let output = ctx.createImageData(input)
+      let ctx = this.outputCtx;
+      let output = ctx.createImageData(input);
       let w = input.width,
-        h = input.height
+        h = input.height;
       let iD = input.data,
-        oD = output.data
+        oD = output.data;
       for (let y = 1; y < h - 1; y += 1) {
         for (let x = 1; x < w - 1; x += 1) {
           for (let c = 0; c < 3; c += 1) {
-            let i = (y * w + x) * 4 + c
+            let i = (y * w + x) * 4 + c;
             oD[i] =
               offset +
               (kernel[0] * iD[i - w * 4 - 4] +
@@ -115,129 +130,156 @@ export default {
                 kernel[6] * iD[i + w * 4 - 4] +
                 kernel[7] * iD[i + w * 4] +
                 kernel[8] * iD[i + w * 4 + 4]) /
-                this.divisor
+                this.divisor;
           }
-          oD[(y * w + x) * 4 + 3] = 255
+          oD[(y * w + x) * 4 + 3] = 255;
         }
       }
-      ctx.putImageData(output, 0, 0)
+      ctx.putImageData(output, 0, 0);
+    },
+    mosaic() {
+      console.log("马赛克处理开始");
+      let input = this.imageData;
+      let ctx = this.outputCtx;
+      let output = ctx.createImageData(input);
+      let w = input.width,
+        h = input.height;
+      let iD = input.data,
+        oD = output.data;
+      let px = 20;
+      for (let y = 0; y < h; y += px) {
+        for (let x = 0; x < w; x += px) {
+          for (let my = 0; my < px; my++) {
+            for (let mx = 0; mx < px; mx++) {
+              oD[((y + my) * w + x + mx) * 4 + 3] = 255;
+              if(x + mx >= w) continue;
+              oD[((y + my) * w + x + mx) * 4 + 0] = iD[(y * w + x) * 4 + 0];
+              oD[((y + my) * w + x + mx) * 4 + 1] = iD[(y * w + x) * 4 + 1];
+              oD[((y + my) * w + x + mx) * 4 + 2] = iD[(y * w + x) * 4 + 2];
+            }
+          }
+        }
+      }
+      console.log("马赛克处理结束");
+      console.log(oD, iD);
+      ctx.putImageData(output, 0, 0);
     },
     generateAsciiArt(grayScaleSelect) {
-      let vm = this
-      let canvas = document.getElementById('output')
-      let ctx = canvas.getContext('2d')
-      let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-      console.log('get ctx')
-      let data = imageData.data
-      let width = canvas.width
-      let widthSign = 1
-      let heightSign = 1
+      let vm = this;
+      let canvas = document.getElementById("output");
+      let ctx = canvas.getContext("2d");
+      let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      console.log("get ctx");
+      let data = imageData.data;
+      let width = canvas.width;
+      let widthSign = 1;
+      let heightSign = 1;
 
-      let grayScale2Ascii
-      let grayScale
+      let grayScale2Ascii;
+      let grayScale;
 
       if (grayScaleSelect === 69) {
         // 69级灰度
         grayScale2Ascii =
-          '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,"^`\'. '
-        grayScale = grayScale2Ascii.length
+          "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
+        grayScale = grayScale2Ascii.length;
       } else {
         // 十级灰度
-        grayScale2Ascii = '@%#*+=-:. '
-        grayScale = grayScale2Ascii.length
+        grayScale2Ascii = "@%#*+=-:. ";
+        grayScale = grayScale2Ascii.length;
       }
-      console.log('get grayScale')
-      let newCanvas = document.createElement('canvas')
-      newCanvas.height = imageData.height * 10
-      newCanvas.width = imageData.width * 10
-      let newCtx = newCanvas.getContext('2d')
-      newCtx.fillStyle = '#fff'
-      newCtx.fillRect(0, 0, imageData.width * 10, imageData.height * 10)
-      newCtx.fillStyle = '#000'
-      newCtx.font = '15px'
+      console.log("get grayScale");
+      let newCanvas = document.createElement("canvas");
+      newCanvas.height = imageData.height * 10;
+      newCanvas.width = imageData.width * 10;
+      let newCtx = newCanvas.getContext("2d");
+      newCtx.fillStyle = "#fff";
+      newCtx.fillRect(0, 0, imageData.width * 10, imageData.height * 10);
+      newCtx.fillStyle = "#000";
+      newCtx.font = "15px";
 
-      vm.asciiArray = []
-      let asciiLineArray = []
-      console.log('parse start')
+      vm.asciiArray = [];
+      let asciiLineArray = [];
+      console.log("parse start");
       for (let i = 0; i < data.length; i += 4) {
-        let avg = (data[i] + data[i + 1] + data[i + 2]) / 3
+        let avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
         asciiLineArray.push(
-          grayScale2Ascii[Math.floor(avg / 225 * grayScale)] || ' '
-        )
+          grayScale2Ascii[Math.floor((avg / 225) * grayScale)] || " "
+        );
         newCtx.fillText(
-          grayScale2Ascii[Math.floor(avg / 225 * grayScale)] || ' ',
+          grayScale2Ascii[Math.floor((avg / 225) * grayScale)] || " ",
           widthSign * 10,
           heightSign * 10
-        )
+        );
         if (widthSign < width) {
-          widthSign += 1
+          widthSign += 1;
         } else {
-          vm.asciiArray.push(asciiLineArray)
-          asciiLineArray = []
-          widthSign = 1
-          heightSign += 1
+          vm.asciiArray.push(asciiLineArray);
+          asciiLineArray = [];
+          widthSign = 1;
+          heightSign += 1;
         }
       }
-      console.log('parse end')
+      console.log("parse end");
 
       let blob = newCanvas.toBlob(
-        blob => FileSaver.saveAs(blob, 'hello world.jpg'),
-        'image/jpeg',
+        blob => FileSaver.saveAs(blob, "hello world.jpg"),
+        "image/jpeg",
         0.8
-      )
+      );
     },
     draw(img, width, height) {
-      this.loading = true
-      let display = document.querySelector('.canvas-display')
-      let input = document.querySelector('#input')
-      let output = document.querySelector('#output')
+      this.loading = true;
+      let display = document.querySelector(".canvas-display");
+      let input = document.querySelector("#input");
+      let output = document.querySelector("#output");
 
-      display.removeChild(input)
-      display.removeChild(output)
+      display.removeChild(input);
+      display.removeChild(output);
 
-      this.inputCtx = input.getContext('2d')
+      this.inputCtx = input.getContext("2d");
 
-      this.outputCtx = output.getContext('2d')
+      this.outputCtx = output.getContext("2d");
 
       if (80 / 48 < width / height) {
-        output.width = input.width = 800
-        output.height = input.height = 800 * height / width
-        let top = 240 - 400 * height / width
-        output.style.top = input.style.top = top + 'px'
-        output.style.left = input.style.left = '0px'
-        display.appendChild(input)
-        display.appendChild(output)
+        output.width = input.width = 800;
+        output.height = input.height = (800 * height) / width;
+        let top = 240 - (400 * height) / width;
+        output.style.top = input.style.top = top + "px";
+        output.style.left = input.style.left = "0px";
+        display.appendChild(input);
+        display.appendChild(output);
       } else {
-        output.height = input.height = 480
-        output.width = input.width = 480 * width / height
-        let left = 400 - 240 * width / height
-        output.style.top = input.style.top = '0px'
-        output.style.left = input.style.left = left + 'px'
-        display.appendChild(input)
-        display.appendChild(output)
+        output.height = input.height = 480;
+        output.width = input.width = (480 * width) / height;
+        let left = 400 - (240 * width) / height;
+        output.style.top = input.style.top = "0px";
+        output.style.left = input.style.left = left + "px";
+        display.appendChild(input);
+        display.appendChild(output);
       }
 
-      let ctx = this.inputCtx
-      ctx.drawImage(img, 0, 0, input.width, input.height)
-      let imageData = ctx.getImageData(0, 0, input.width, input.height)
-      this.imageData = imageData
-      this.convolutionMatrix(imageData, this.custom, 0)
-      this.loading = false
+      let ctx = this.inputCtx;
+      ctx.drawImage(img, 0, 0, input.width, input.height);
+      let imageData = ctx.getImageData(0, 0, input.width, input.height);
+      this.imageData = imageData;
+      this.convolutionMatrix(imageData, this.custom, 0);
+      this.loading = false;
     }
   },
   mounted() {
-    let vm = this
-    let img = new Image()
-    img.src = './img.jpg'
+    let vm = this;
+    let img = new Image();
+    img.src = "./img.jpg";
     img.onload = function() {
-      vm.draw(this, this.width, this.height)
-    }
+      vm.draw(this, this.width, this.height);
+    };
   }
-}
+};
 </script>
 
 <style lang="less">
-@import './common.css';
+@import "./common.css";
 #app {
   color: #eee;
   width: 1000px;
